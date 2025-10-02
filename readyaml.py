@@ -43,6 +43,25 @@ class ReadYamlData:
                     print('写入文件的内容必须是字典类型')
         except Exception as e:
             print(e)
+
+    def get_extract_yaml(self, node_name):
+        """
+        读取接口提取的变量值
+        :param node_name:yaml文件key值
+        :return:
+        """
+        if os.path.exists('extract.yaml'):
+            pass
+        else:
+            print('extract.yaml文件不存在')
+            with open('extract.yaml', 'w', encoding = 'utf-8'):
+                print('extract.yaml文件已创建')
+
+        with open('extract.yaml', 'r', encoding = 'utf-8') as rf_e:
+            extract_yaml = yaml.safe_load(rf_e)
+            return extract_yaml[node_name]
+
+
 if __name__ == '__main__':
     res = get_testcase_yaml('logen.yaml')[0]
     url = res['baseInfo']['url']

@@ -4,6 +4,7 @@
     method: post
     header:
       Content-Type: app
+      token: ${get_extract_data(token)}
   testCase:
     - case_name: 用户名和密码正确登录验证
       data:
