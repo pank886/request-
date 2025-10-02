@@ -15,8 +15,8 @@
         token: $.token
     - case_name: 用户名和密码错误登录验证
       data:
-        user_name: test01
-        passwd: admin123
+        user_name: test02
+        passwd: admin124
       validation:
         - contains: { 'msg': '登录成功' }
       extract:

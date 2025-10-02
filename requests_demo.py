@@ -30,7 +30,7 @@ class RequestsDemo(object):
             res = requests.post(url = url, data = data, verify = False)
         else:
             res = requests.post(url = url, data = data, headers = header, verify = False)
-        return res.jison()
+        return res.json()
 
     def put(self):
         pass
