@@ -1,0 +1,24 @@
+- baseInfo:
+    api_name: 用户登录
+    url: /dar/user/login
+    method: post
+    header:
+      Content-Type: app
+      token: ${get_extract_data(token)}
+  testCase:
+    - case_name: 用户名和密码正确登录验证
+      data:
+        user_name: test01
+        passwd: admin123
+      validation:
+        - contains: {'msg': '登录成功'}
+      extract:
+        token: $.token
+    - case_name: 用户名和密码错误登录验证
+      data:
+        user_name: test02
+        passwd: admin124
+      validation:
+        - contains: { 'msg': '登录成功' }
+      extract:
+        token: $.token
