@@ -2,6 +2,8 @@ import os
 
 import yaml
 
+from conf.setting import FILE_PATH
+
 def get_testcase_yaml(file):
     """
     获取yaml文件数据
@@ -21,7 +23,7 @@ class ReadYamlData:
         if yaml_file is not None:
             self.yaml_file = yaml_file
         else:
-            self.yaml_file = 'logen.yaml'
+            self.yaml_file = '../testcase/Login/logen.yaml'
 
     def write_yaml_data(self, value):
         """
@@ -29,7 +31,7 @@ class ReadYamlData:
         :param value:（dict字典类型）写入的数据内容
         :return:
         """
-        file_path = 'extract.yaml'
+        file_path = FILE_PATH['extarct']
         if not os.path.exists(file_path):
             with open(file_path, 'w', encoding = 'UTF-8'):
                 pass
@@ -50,26 +52,27 @@ class ReadYamlData:
         :param node_name:yaml文件key值
         :return:
         """
-        if os.path.exists('extract.yaml'):
+        file_path = FILE_PATH['extarct']
+        if os.path.exists(file_path):
             pass
         else:
             print('extract.yaml文件不存在')
-            with open('extract.yaml', 'w', encoding = 'utf-8'):
+            with open('../extract.yaml', 'w', encoding ='utf-8'):
                 print('extract.yaml文件已创建')
 
-        with open('extract.yaml', 'r', encoding = 'utf-8') as rf_e:
+        with open('../extract.yaml', 'r', encoding ='utf-8') as rf_e:
             extract_yaml = yaml.safe_load(rf_e)
             return extract_yaml[node_name]
 
 
 if __name__ == '__main__':
-    res = get_testcase_yaml('logen.yaml')[0]
+    res = get_testcase_yaml('../testcase/Login/logen.yaml')[0]
     url = res['baseInfo']['url']
     method = res['baseInfo']['method']
     header = res['baseInfo']['header']
     data = res['testCase'][0]['data']
     url_https = f"http://127.0.0.1:8787{url}"
-    from requests_demo import RequestsDemo
+    from sendrequests import RequestsDemo
     send = RequestsDemo()
     print(data)
     resd = send.run_main(url_https, data, header = None, method = method)

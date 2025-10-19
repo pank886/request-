@@ -1,3 +1,5 @@
+import hashlib
+
 from readyaml import ReadYamlData
 
 import random
@@ -28,7 +30,8 @@ class DebugTalk:
             }
             data = data_value[randoms]
         return data
-
+    def md5_params(self, params):
+        return 'sadfsdf' + str(params)
 
 
 if __name__ == '__main__':
