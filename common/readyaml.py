@@ -2,6 +2,8 @@ import os
 
 import yaml
 
+from common.sendrequests import SendRequests
+
 from conf.setting import FILE_PATH
 
 def get_testcase_yaml(file):
@@ -73,7 +75,7 @@ if __name__ == '__main__':
     data = res['testCase'][0]['data']
     url_https = f"http://127.0.0.1:8787{url}"
     from sendrequests import RequestsDemo
-    send = RequestsDemo()
+    send = SendRequests()
     print(data)
     resd = send.run_main(url_https, data, header = None, method = method)
     print(resd)

@@ -1,6 +1,6 @@
 import requests
 
-class RequestsDemo(object):
+class SendRequests(object):
     def __init__(self):
         pass
 
