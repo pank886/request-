@@ -4,10 +4,13 @@ from common.readyaml import get_testcase_yaml, ReadYamlData
 
 from common.debugtilk import DebugTalk
 
+from conf.operationConfig import OperationConfig
+
 class BassRequests:
 
     def __init__(self):
         self.read = ReadYamlData()
+        self.conf = OperationConfig()
 
     def replace_load(self, data):
         """
@@ -39,7 +42,12 @@ class BassRequests:
             data = str_data
         return data
 
-
+    def specifcation_yaml(self, case_info):
+        """
+        规范yaml测试用例写法
+        case_info: list类型，调试取case_info[0]-->dict
+        """
+        pass
 
 if __name__ == '__main__':
     data = get_testcase_yaml('../testcase/Login/logen.yaml')

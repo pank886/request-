@@ -2,6 +2,7 @@ import configparser
 
 from conf.setting import FILE_PATH
 
+
 class OperationConfig:
     """封装读取ini配置文件"""
 
