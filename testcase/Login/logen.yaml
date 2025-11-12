@@ -14,11 +14,11 @@
         - contains: {'msg': '登录成功'}
       extract:
         token: ${get_extract_data(token)}
-    - case_name: 用户名和密码错误登录验证
+    - case: 1
       data:
         user_name: test02
         passwd: admin124
       validation:
         - contains: { 'msg': '登录成功' }
-      extract:
+      extract_list:
         token: ${get_extract_data(token)}

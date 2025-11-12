@@ -6,11 +6,14 @@ from common.debugtilk import DebugTalk
 
 from conf.operationConfig import OperationConfig
 
-class BassRequests:
+from common.sendrequests import SendRequests
+
+class RequestsBase:
 
     def __init__(self):
         self.read = ReadYamlData()
         self.conf = OperationConfig()
+        self.send = SendRequests()
 
     def replace_load(self, data):
         """
@@ -42,17 +45,38 @@ class BassRequests:
             data = str_data
         return data
 
-    def specifcation_yaml(self, case_info):
+    def specifcation_yaml(self, case_info, params_type):
         """
         规范yaml测试用例写法
         case_info: list类型，调试取case_info[0]-->dict
         """
-        pass
+        #限定参数类型
+        params_type = ['params', 'data', 'json']
+        #获取yaml文件请求头信息
+        base_url = self.conf.get_envi('host')
+        url = base_url + case_info['baseInfo']['url']
+        api_name = case_info['baseInfo']['api_name']
+        method = case_info['baseInfo']['method']
+        header = case_info['baseInfo']['header']
+        cookies = self.replace_load(case_info['baseInfo']['cookies'])
+
+        #获取参数信息
+        for tc in case_info['testCase']:
+            case_name = tc.pop('case_name', '未命名用例')
+            validation = tc.pop('validation', '未配置断言')
+            extract = tc.pop('extract', None)
+            extract_list = tc.pop('extract_list', None)
+            for key, value in tc.items():
+                if key in params_type:
+                    tc[key] = self.replace_load(value)
+
+            res = self.send.run_main(name = api_name, url = url, header = header, method = method,
+                                     cookies = cookies, file = None, **tc)
+            print(res)
+
+
 
 if __name__ == '__main__':
-    data = get_testcase_yaml('../testcase/Login/logen.yaml')
-
-    print(data)
-    base = BassRequests()
-    str_data = base.replace_load(data)
-    print(str_data)
+    req = RequestsBase()
+    data = get_testcase_yaml('../testcase/Login/logen.yaml')[0]
+    print(req.specifcation_yaml(data, json))

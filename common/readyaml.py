@@ -2,7 +2,7 @@ import os
 
 import yaml
 
-from common.sendrequests import SendRequests
+#from common.sendrequests import SendRequests
 
 from conf.setting import FILE_PATH
 

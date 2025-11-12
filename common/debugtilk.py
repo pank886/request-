@@ -1,6 +1,6 @@
 import hashlib
 
-from readyaml import ReadYamlData
+from common.readyaml import ReadYamlData
 
 import random
 

@@ -31,11 +31,11 @@ class OperationConfig:
 
     def get_envi(self, option):
         """获取接口服务器ip地址"""
-        return self.conf.get_section_for_data('api_envi', option)
+        return self.get_section_for_data('api_envi', option)
 
     def get_MySQL(self, option):
         """获取接口服务器ip地址"""
-        return self.conf.get_section_for_data('MySQL', option)
+        return self.get_section_for_data('MySQL', option)
 
 
 if __name__ == '__main__':
