@@ -1,0 +1,4 @@
+INFO - 2025-11-14 15:33:57,316 - conftest.py:7 - [conftest:fixture_test] - ------------接口测试开始----------------
+INFO - 2025-11-14 15:33:57,917 - conftest.py:9 - [conftest:fixture_test] - ------------接口测试结束----------------
+INFO - 2025-11-14 15:33:57,924 - conftest.py:7 - [conftest:fixture_test] - ------------接口测试开始----------------
+INFO - 2025-11-14 15:33:57,937 - conftest.py:9 - [conftest:fixture_test] - ------------接口测试结束----------------

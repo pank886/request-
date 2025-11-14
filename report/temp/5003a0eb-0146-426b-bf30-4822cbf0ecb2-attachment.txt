@@ -1,3 +1,0 @@
-[32mINFO    [0m common.recordlog:conftest.py:7 ------------接口测试开始----------------
-[32mINFO    [0m common.recordlog:test_login.py:14 获取接口地址 : http://127.0.0.1:8787/dar/user/login
-[32mINFO    [0m common.recordlog:conftest.py:9 ------------接口测试结束----------------

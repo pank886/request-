@@ -1,0 +1,11 @@
+INFO     common.recordlog:conftest.py:7 ------------接口测试开始----------------
+INFO     common.recordlog:sendrequests.py:49 接口名称:用户登录
+INFO     common.recordlog:sendrequests.py:50 接口请求地址:http://127.0.0.1:8787/dar/user/login
+INFO     common.recordlog:sendrequests.py:51 请求方法:post
+INFO     common.recordlog:sendrequests.py:52 测试用例名称:未命名用例
+INFO     common.recordlog:sendrequests.py:53 请求头:{'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'token': '${get_extract_data(token)}'}
+INFO     common.recordlog:sendrequests.py:54 Cookies:None
+INFO     common.recordlog:sendrequests.py:58 请求参数:{'data': {'user_name': 'test01', 'passwd': 'admin123'}}
+INFO     common.recordlog:sendrequests.py:25 cookie:{'Cookie': {'access_token_cookie': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc2MzEwNzU3MSwianRpIjoiMzE2OTRkNjUtNGExMy00YTNjLTlkY2QtMjQxNmM3YmQ4ZDEyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImV4YW1wbGVfdXNlciIsIm5iZiI6MTc2MzEwNzU3MSwiZXhwIjoxNzYzMTA4NDcxfQ.JfDd6Z33nolKhAQoCx5dyU1ziu7twTB4j1ZBVWPwpcY'}}
+INFO     common.recordlog:sendrequests.py:26 接口实际返回信息{"error_code":null,"msg":"登录成功","msg_code":200,"orgId":"6140913758128971280","token":"041BA0b0a56B754be0Dab7F1f88FD","userId":"1897207901629628779"}
+INFO     common.recordlog:conftest.py:9 ------------接口测试结束----------------

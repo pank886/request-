@@ -1,11 +1,8 @@
 import json
 
 from common.readyaml import get_testcase_yaml, ReadYamlData
-
 from common.debugtilk import DebugTalk
-
 from conf.operationConfig import OperationConfig
-
 from common.sendrequests import SendRequests
 
 class RequestsBase:
@@ -45,7 +42,7 @@ class RequestsBase:
             data = str_data
         return data
 
-    def specifcation_yaml(self, case_info, params_type):
+    def specifcation_yaml(self, case_info, params_type = None):
         """
         规范yaml测试用例写法
         case_info: list类型，调试取case_info[0]-->dict
@@ -58,8 +55,10 @@ class RequestsBase:
         api_name = case_info['baseInfo']['api_name']
         method = case_info['baseInfo']['method']
         header = case_info['baseInfo']['header']
-        cookies = self.replace_load(case_info['baseInfo']['cookies'])
-
+        try:
+            cookies = self.replace_load(case_info['baseInfo']['cookies'])
+        except:
+            cookies = None
         #获取参数信息
         for tc in case_info['testCase']:
             case_name = tc.pop('case_name', '未命名用例')
@@ -70,9 +69,9 @@ class RequestsBase:
                 if key in params_type:
                     tc[key] = self.replace_load(value)
 
-            res = self.send.run_main(name = api_name, url = url, header = header, method = method,
-                                     cookies = cookies, file = None, **tc)
-            print(res)
+            res = self.send.run_main(name = api_name, case_name = case_name, url = url, header = header, method = method,
+                                     cookies = cookies, files = None, **tc)
+            print(res.text)
 
 
 

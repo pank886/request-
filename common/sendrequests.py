@@ -3,9 +3,8 @@ import json
 import pytest
 import requests
 from common.recordlog import logs
-from requests import utils
 from common.readyaml import ReadYamlData
-from urllib3.contrib.emscripten.fetch import send_request
+
 
 
 class SendRequests(object):
@@ -24,7 +23,7 @@ class SendRequests(object):
                 cookie['Cookie'] = set_cookie
                 self.read.write_yaml_data(set_cookie)
                 logs.info(f'cookie:{cookie}')
-            logs.info(f'接口实际返回信息{result}')
+            logs.info(f'接口实际返回信息{result.text if result.text else result}')
         except requests.exceptions.ConnectionError as e:
             logs.error(f'接口连接服务器异常{e}')
             pytest.fail('接口请求异常，可能是request的连接数过多或者请求速度过快导致程序报错！')
