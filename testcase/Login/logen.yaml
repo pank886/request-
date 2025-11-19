@@ -13,4 +13,5 @@
       validation:
         - contains: {'msg': '登录成功'}
       extract:
-        token: ${get_extract_data(token)}
+#       token: '"token":"(.*?)"'
+        token: $.token

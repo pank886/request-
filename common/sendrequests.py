@@ -1,7 +1,8 @@
 import json
-
+import allure
 import pytest
 import requests
+
 from common.recordlog import logs
 from common.readyaml import ReadYamlData
 
@@ -53,13 +54,16 @@ class SendRequests(object):
             logs.info(f'请求头:{header}')
             logs.info(f'Cookies:{cookies}')
             #请求参数处理
-            json.dumps(kwargs, ensure_ascii=False)
+            req_params = json.dumps(kwargs, ensure_ascii=False)
             if 'data' in kwargs.keys():
                 logs.info(f'请求参数:{kwargs}')
+                allure.attach(req_params, f'请求参数:{req_params}', allure.attachment_type.TEXT)
             elif 'json' in kwargs.keys():
                 logs.info(f'请求参数:{kwargs}')
+                allure.attach(req_params, f'请求参数:{req_params}', allure.attachment_type.TEXT)
             elif 'params' in kwargs.keys():
                 logs.info(f'请求参数:{kwargs}')
+                allure.attach(req_params, f'请求参数:{req_params}', allure.attachment_type.TEXT)
         except Exception as e:
             logs.error(f'错误日志：{e}')
         response = self.send_request(method = method, url = url, headers = header,

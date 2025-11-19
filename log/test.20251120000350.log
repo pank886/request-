@@ -1,0 +1,11 @@
+INFO - 2025-11-20 00:03:50,279 - sendrequests.py:50 - [sendrequests:run_main] - 接口名称:用户登录
+INFO - 2025-11-20 00:03:50,279 - sendrequests.py:51 - [sendrequests:run_main] - 接口请求地址:http://127.0.0.1:8787/dar/user/login
+INFO - 2025-11-20 00:03:50,279 - sendrequests.py:52 - [sendrequests:run_main] - 请求方法:post
+INFO - 2025-11-20 00:03:50,280 - sendrequests.py:53 - [sendrequests:run_main] - 测试用例名称:用户名和密码正确登录验证
+INFO - 2025-11-20 00:03:50,280 - sendrequests.py:54 - [sendrequests:run_main] - 请求头:{'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'token': '${get_extract_data(token)}'}
+INFO - 2025-11-20 00:03:50,280 - sendrequests.py:55 - [sendrequests:run_main] - Cookies:None
+INFO - 2025-11-20 00:03:50,280 - sendrequests.py:59 - [sendrequests:run_main] - 请求参数:{'data': {'user_name': 'test01', 'passwd': 'admin123'}}
+INFO - 2025-11-20 00:03:50,286 - sendrequests.py:26 - [sendrequests:send_request] - cookie:{'Cookie': {'access_token_cookie': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc2MzU2ODIzMCwianRpIjoiZWMyNWEzYTktMzY3ZS00MzgyLTk1NTctOGJkNzcxZGYzOGVlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImV4YW1wbGVfdXNlciIsIm5iZiI6MTc2MzU2ODIzMCwiZXhwIjoxNzYzNTY5MTMwfQ.HiEbl-Kd19bPiFbbPzQpXAiNVcdeD_sjdc_yIT5aXlI'}}
+INFO - 2025-11-20 00:03:50,286 - sendrequests.py:27 - [sendrequests:send_request] - 接口实际返回信息{"error_code":null,"msg":"登录成功","msg_code":200,"orgId":"6140913758128971280","token":"C0EA5e7EA1a61e4F4e2b8A58aeb8B","userId":"4756418568990480136"}
+
+ERROR - 2025-11-20 00:03:50,286 - apiutil.py:95 - [apiutil:specification_yaml] - 请求处理异常: module 'jsonpath' has no attribute 'jsonpath'

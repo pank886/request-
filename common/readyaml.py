@@ -1,9 +1,7 @@
 import os
 
 import yaml
-
 #from common.sendrequests import SendRequests
-
 from conf.setting import FILE_PATH
 
 def get_testcase_yaml(file):
@@ -33,7 +31,7 @@ class ReadYamlData:
         :param value:（dict字典类型）写入的数据内容
         :return:
         """
-        file_path = FILE_PATH['extarct']
+        file_path = FILE_PATH['extract']
         if not os.path.exists(file_path):
             with open(file_path, 'w', encoding = 'UTF-8'):
                 pass
@@ -54,7 +52,7 @@ class ReadYamlData:
         :param node_name:yaml文件key值
         :return:
         """
-        file_path = FILE_PATH['extarct']
+        file_path = FILE_PATH['extract']
         if os.path.exists(file_path):
             pass
         else:

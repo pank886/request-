@@ -12,7 +12,7 @@ STRNEM_LOG_LEVEL = logging.DEBUG #输出到控制台的级别
 
 #文件路径
 FILE_PATH = {
-    'extarct' : os.path.join(DIR_PATH, 'extarct'),
+    'extract' : os.path.join(DIR_PATH, 'extract.yaml'),
     'conf' : os.path.join(DIR_PATH, 'conf', 'config.ini'),
     'LOG': os.path.join(DIR_PATH, 'log')
 }

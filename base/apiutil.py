@@ -1,9 +1,13 @@
+import re
 import json
+import allure
+import jsonpath_ng
 
 from common.readyaml import get_testcase_yaml, ReadYamlData
 from common.debugtilk import DebugTalk
 from conf.operationConfig import OperationConfig
 from common.sendrequests import SendRequests
+from common.recordlog import logs
 
 class RequestsBase:
 
@@ -42,7 +46,7 @@ class RequestsBase:
             data = str_data
         return data
 
-    def specifcation_yaml(self, case_info, params_type = None):
+    def specification_yaml(self, case_info):
         """
         规范yaml测试用例写法
         case_info: list类型，调试取case_info[0]-->dict
@@ -50,32 +54,81 @@ class RequestsBase:
         #限定参数类型
         params_type = ['params', 'data', 'json']
         #获取yaml文件请求头信息
-        base_url = self.conf.get_envi('host')
-        url = base_url + case_info['baseInfo']['url']
-        api_name = case_info['baseInfo']['api_name']
-        method = case_info['baseInfo']['method']
-        header = case_info['baseInfo']['header']
         try:
-            cookies = self.replace_load(case_info['baseInfo']['cookies'])
-        except:
-            cookies = None
-        #获取参数信息
-        for tc in case_info['testCase']:
-            case_name = tc.pop('case_name', '未命名用例')
-            validation = tc.pop('validation', '未配置断言')
-            extract = tc.pop('extract', None)
-            extract_list = tc.pop('extract_list', None)
-            for key, value in tc.items():
-                if key in params_type:
-                    tc[key] = self.replace_load(value)
+            base_url = self.conf.get_envi('host')
+            url = base_url + case_info['baseInfo']['url']
+            allure.attach(url, f'接口地址:{url}')
+            api_name = case_info['baseInfo']['api_name']
+            allure.attach(api_name, f'接口名称:{api_name}')
+            method = case_info['baseInfo']['method']
+            allure.attach(method, f'请求方法:{method}')
+            header = case_info['baseInfo']['header']
+            # 多个请求头以文本形式展示
+            allure.attach(str(header), f'请求头:{header}', allure.attachment_type.TEXT)
+            try:
+                cookies = self.replace_load(case_info['baseInfo']['cookies'])
+                allure.attach(cookies, f'请求方法:{cookies}', allure.attachment_type.TEXT)
+            except:
+                cookies = None
+            #获取参数信息
+            for tc in case_info['testCase']:
+                case_name = tc.pop('case_name', '未命名用例')
+                allure.attach(case_name, f'测试用例名称:{case_name}')
+                validation = tc.pop('validation', '未配置断言')
+                extract = tc.pop('extract', None)
+                extract_list = tc.pop('extract_list', None)
+                for key, value in tc.items():
+                    if key in params_type:
+                        tc[key] = self.replace_load(value)
 
-            res = self.send.run_main(name = api_name, case_name = case_name, url = url, header = header, method = method,
-                                     cookies = cookies, files = None, **tc)
-            print(res.text)
+                res = self.send.run_main(name = api_name, case_name = case_name, url = url, header = header, method = method,
+                                         cookies = cookies, files = None, **tc)
+                res_text = res.text
+                allure.attach(res.text, f'接口响应信息:{res.text}', allure.attachment_type.TEXT)
 
+                if extract is not None:
+                    self.extract_data(extract, res_text)
+                if extract_list is not None:
+                    pass
 
+        except Exception as e:
+            logs.error("请求处理异常: %s", str(e))
+            raise RuntimeError(f"测试执行失败: {e}") from e
+
+    def extract_data(self, testcase_extract, response):
+        """
+        提取接口实际返回值，支持正则表达式及json提取器
+        testcase_extract:yaml文件中的extract值
+        response:实际返回的值
+        """
+        pattern_lst = ['(.+?)', '(.*?)', r'(\d+)', r'(\d*)']
+        try:
+            for key, value in testcase_extract.items():
+                #处理正则表达式提取
+                for pat in pattern_lst:
+                    if pat in value:
+                        ext_list = re.search(value, response)
+                        if pat in [r'(\d+)', r'(\d*)']:
+                            extract_data = {key:int(ext_list.group(1))}
+                        else:
+                            extract_data = {key:ext_list.group(1)}
+                        logs.info(f'正则表达式提取到的参数:{extract_data}')
+                        self.read.write_yaml_data(extract_data)
+                #处理json表达式提取
+                if "$" in value:
+                    ext_json_ql = jsonpath_ng.parse(value).find(json.loads(response))
+                    ext_json = ext_json_ql[0].value
+                    if ext_json:
+                        extract_data = {key:ext_json}
+                        print(extract_data)
+                    else:
+                        extract_data = {key:'未提取到，该接口返回值为空或者json提取表达式有误'}
+                        logs.info(f'json提取到的全量参数:{ext_json_ql}')
+                    self.read.write_yaml_data(extract_data)
+        except Exception as e:
+            logs.error("接口返回值提取异常，检查yaml文件extract表达式是否正确: %s", str(e))
 
 if __name__ == '__main__':
     req = RequestsBase()
     data = get_testcase_yaml('../testcase/Login/logen.yaml')[0]
-    print(req.specifcation_yaml(data, json))
+    print(req.specification_yaml(data))

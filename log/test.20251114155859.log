@@ -1,9 +1,0 @@
-INFO - 2025-11-14 15:58:59,233 - sendrequests.py:49 - [sendrequests:run_main] - 接口名称:用户登录
-INFO - 2025-11-14 15:58:59,234 - sendrequests.py:50 - [sendrequests:run_main] - 接口请求地址:http://127.0.0.1:8787/dar/user/login
-INFO - 2025-11-14 15:58:59,234 - sendrequests.py:51 - [sendrequests:run_main] - 请求方法:post
-INFO - 2025-11-14 15:58:59,234 - sendrequests.py:52 - [sendrequests:run_main] - 测试用例名称:用户名和密码正确登录验证
-INFO - 2025-11-14 15:58:59,234 - sendrequests.py:53 - [sendrequests:run_main] - 请求头:{'Content-Type': 'app', 'token': '${get_extract_data(token)}'}
-INFO - 2025-11-14 15:58:59,234 - sendrequests.py:54 - [sendrequests:run_main] - Cookies:None
-INFO - 2025-11-14 15:58:59,234 - sendrequests.py:58 - [sendrequests:run_main] - 请求参数:{'data': {'user_name': 'test01', 'passwd': 'admin123'}}
-INFO - 2025-11-14 15:58:59,242 - sendrequests.py:26 - [sendrequests:send_request] - 接口实际返回信息{"msg":"参数错误","msg_code":-1}
-

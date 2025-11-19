@@ -1,8 +1,0 @@
-INFO - 2025-11-14 15:14:05,243 - sendrequests.py:49 - [sendrequests:run_main] - 接口名称:用户登录
-INFO - 2025-11-14 15:14:05,243 - sendrequests.py:50 - [sendrequests:run_main] - 接口请求地址:http://127.0.0.1:8787/dar/user/login
-INFO - 2025-11-14 15:14:05,243 - sendrequests.py:51 - [sendrequests:run_main] - 请求方法:post
-INFO - 2025-11-14 15:14:05,243 - sendrequests.py:52 - [sendrequests:run_main] - 测试用例名称:用户名和密码正确登录验证
-INFO - 2025-11-14 15:14:05,244 - sendrequests.py:53 - [sendrequests:run_main] - 请求头:{'Content-Type': 'app', 'token': '${get_extract_data(token)}'}
-INFO - 2025-11-14 15:14:05,244 - sendrequests.py:54 - [sendrequests:run_main] - Cookies:None
-INFO - 2025-11-14 15:14:05,244 - sendrequests.py:58 - [sendrequests:run_main] - 请求参数:{'data': {'user_name': 'test01', 'passwd': "sadfsdf'admin123'"}}
-ERROR - 2025-11-14 15:14:07,282 - sendrequests.py:28 - [sendrequests:send_request] - 接口连接服务器异常HTTPConnectionPool(host='127.0.0.1', port=8787): Max retries exceeded with url: /dar/user/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000145C0ABEBA0>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))

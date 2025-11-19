@@ -1,0 +1,12 @@
+INFO - 2025-11-16 17:00:15,701 - conftest.py:7 - [conftest:fixture_test] - ------------接口测试开始----------------
+INFO - 2025-11-16 17:00:15,706 - sendrequests.py:49 - [sendrequests:run_main] - 接口名称:用户登录
+INFO - 2025-11-16 17:00:15,706 - sendrequests.py:50 - [sendrequests:run_main] - 接口请求地址:http://127.0.0.1:8787/dar/user/login
+INFO - 2025-11-16 17:00:15,706 - sendrequests.py:51 - [sendrequests:run_main] - 请求方法:post
+INFO - 2025-11-16 17:00:15,706 - sendrequests.py:52 - [sendrequests:run_main] - 测试用例名称:用户名和密码正确登录验证
+INFO - 2025-11-16 17:00:15,706 - sendrequests.py:53 - [sendrequests:run_main] - 请求头:{'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'token': '${get_extract_data(token)}'}
+INFO - 2025-11-16 17:00:15,706 - sendrequests.py:54 - [sendrequests:run_main] - Cookies:None
+INFO - 2025-11-16 17:00:15,706 - sendrequests.py:58 - [sendrequests:run_main] - 请求参数:{'data': {'user_name': 'test01', 'passwd': 'admin123'}}
+INFO - 2025-11-16 17:00:15,714 - sendrequests.py:25 - [sendrequests:send_request] - cookie:{'Cookie': {'access_token_cookie': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc2MzI4MzYxNSwianRpIjoiY2JmNWUyZTAtMjVkMC00MTBmLTljYWItZTVjNThjOGJiZmYxIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImV4YW1wbGVfdXNlciIsIm5iZiI6MTc2MzI4MzYxNSwiZXhwIjoxNzYzMjg0NTE1fQ.2lsjQaSZq_pvvdzWLtTK5HCELEJLUpv8Z7uKq9ssgy4'}}
+INFO - 2025-11-16 17:00:15,714 - sendrequests.py:26 - [sendrequests:send_request] - 接口实际返回信息{"error_code":null,"msg":"登录成功","msg_code":200,"orgId":"6140913758128971280","token":"77De9Ff29421a30bd6f9EdDdfdAB6","userId":"9966973328709149025"}
+
+INFO - 2025-11-16 17:00:15,716 - conftest.py:9 - [conftest:fixture_test] - ------------接口测试结束----------------
