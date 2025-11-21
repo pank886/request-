@@ -84,49 +84,109 @@ class RequestsBase:
                 res = self.send.run_main(name = api_name, case_name = case_name, url = url, header = header, method = method,
                                          cookies = cookies, files = None, **tc)
                 res_text = res.text
-                allure.attach(res.text, f'接口响应信息:{res.text}', allure.attachment_type.TEXT)
+                allure.attach(res.text, f'接口响应信息', allure.attachment_type.TEXT)
+                allure.attach(str(res.status_code), f'接口状态码: {res.status_code}', allure.attachment_type.TEXT)
 
                 if extract is not None:
                     self.extract_data(extract, res_text)
                 if extract_list is not None:
-                    pass
+                    self.extract_list_data(extract_list, res_text)
 
         except Exception as e:
             logs.error("请求处理异常: %s", str(e))
             raise RuntimeError(f"测试执行失败: {e}") from e
 
+    # def extract_data(self, testcase_extract, response):
+    #     """
+    #     提取接口实际返回值，支持正则表达式及json提取器
+    #     testcase_extract:yaml文件中的extract值
+    #     response:实际返回的值
+    #     """
+    #     pattern_lst = ['(.+?)', '(.*?)', r'(\d+)', r'(\d*)']
+    #     try:
+    #         for key, value in testcase_extract.items():
+    #             #处理正则表达式提取
+    #             for pat in pattern_lst:
+    #                 if pat in value:
+    #                     ext_list = re.search(value, response)
+    #                     if pat in [r'(\d+)', r'(\d*)']:
+    #                         extract_data = {key:int(ext_list.group(1))}
+    #                     else:
+    #                         extract_data = {key:ext_list.group(1)}
+    #                     logs.info(f'正则表达式提取到的参数:{extract_data}')
+    #                     self.read.write_yaml_data(extract_data)
+    #             #处理json表达式提取
+    #             if "$" in value:
+    #                 ext_json_ql = jsonpath_ng.parse(value).find(json.loads(response))
+    #                 ext_json = ext_json_ql[0].value if ext_json_ql else "未提取到数据，该接口返回结果可能为空"
+    #                 extract_date = {key: ext_json}
+    #                 logs.info(f'json提取到的参数:{ext_json}')
+    #                 self.read.write_yaml_data(extract_data)
+    #     except Exception as e:
+    #         logs.error("接口返回值提取异常，检查yaml文件extract表达式是否正确: %s", str(e))
+
     def extract_data(self, testcase_extract, response):
         """
-        提取接口实际返回值，支持正则表达式及json提取器
-        testcase_extract:yaml文件中的extract值
-        response:实际返回的值
+        提取接口返回值：支持 JSONPath（$开头）和正则表达式
         """
-        pattern_lst = ['(.+?)', '(.*?)', r'(\d+)', r'(\d*)']
+        if not testcase_extract:
+            return
+
+        json_obj = None  # 缓存解析后的 JSON
+
+        for key, value in testcase_extract.items():
+            try:
+                value_str = str(value)
+
+                # ========== 1. JSONPath 提取（以 $ 开头）==========
+                if value_str.strip().startswith("$"):
+                    if json_obj is None:
+                        try:
+                            json_obj = json.loads(response)
+                        except json.JSONDecodeError:
+                            logs.error("响应不是合法 JSON，跳过所有 JSONPath 提取")
+                            json_obj = False  # 标记失败，避免重复尝试
+                    if json_obj is False:
+                        continue
+
+                    matches = jsonpath_parse(value_str).find(json_obj)
+                    result = matches[0].value if matches else "未提取到数据，该接口返回结果可能为空"
+                    logs.info(f'JSON 提取 [{key}]: {result}')
+                    self.read.write_yaml_data({key: result})
+
+                # ========== 2. 正则提取（其他情况）==========
+                else:
+                    match = re.search(value_str, response, re.S)
+                    if match:
+                        result = match.group(1)  # 始终返回字符串，不自动转 int
+                        logs.info(f'正则提取 [{key}]: {result}')
+                        self.read.write_yaml_data({key: result})
+                    else:
+                        logs.warning(f"正则未匹配 [{key}]: {value_str}")
+
+            except Exception as e:
+                logs.error(f"提取 [{key}] 时异常，表达式: {value}, 错误: {e}", exc_info=True)
+
+    def extract_list_data(self, testcase_extract_list, response):
+        """读取列表数据"""
         try:
-            for key, value in testcase_extract.items():
-                #处理正则表达式提取
-                for pat in pattern_lst:
-                    if pat in value:
-                        ext_list = re.search(value, response)
-                        if pat in [r'(\d+)', r'(\d*)']:
-                            extract_data = {key:int(ext_list.group(1))}
-                        else:
-                            extract_data = {key:ext_list.group(1)}
+            for key, value in testcase_extract_list.items():
+                if "(.+?)" in value or "(.*?)" in value:
+                    ext_list = re.findall(value, response, re.S)
+                    if ext_list:
+                        extract_list_data = {key: ext_list}
                         logs.info(f'正则表达式提取到的参数:{extract_data}')
                         self.read.write_yaml_data(extract_data)
-                #处理json表达式提取
                 if "$" in value:
+                    # 增加提取判断，有些返回结果为空提取不到，给一个默认值
                     ext_json_ql = jsonpath_ng.parse(value).find(json.loads(response))
-                    ext_json = ext_json_ql[0].value
-                    if ext_json:
-                        extract_data = {key:ext_json}
-                        print(extract_data)
-                    else:
-                        extract_data = {key:'未提取到，该接口返回值为空或者json提取表达式有误'}
-                        logs.info(f'json提取到的全量参数:{ext_json_ql}')
-                    self.read.write_yaml_data(extract_data)
+                    ext_json = ext_json_ql[0].value if ext_json_ql else "未提取到数据，该接口返回结果可能为空"
+                    extract_date = {key: ext_json}
+                    logs.info('json提取到参数：%s' % extract_date)
+                    self.read.write_yaml_data(extract_date)
         except Exception as e:
             logs.error("接口返回值提取异常，检查yaml文件extract表达式是否正确: %s", str(e))
+
 
 if __name__ == '__main__':
     req = RequestsBase()

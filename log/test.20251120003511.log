@@ -1,8 +1,0 @@
-INFO - 2025-11-20 00:35:11,435 - sendrequests.py:50 - [sendrequests:run_main] - 接口名称:用户登录
-INFO - 2025-11-20 00:35:11,435 - sendrequests.py:51 - [sendrequests:run_main] - 接口请求地址:http://127.0.0.1:8787/dar/user/login
-INFO - 2025-11-20 00:35:11,435 - sendrequests.py:52 - [sendrequests:run_main] - 请求方法:post
-INFO - 2025-11-20 00:35:11,435 - sendrequests.py:53 - [sendrequests:run_main] - 测试用例名称:用户名和密码正确登录验证
-INFO - 2025-11-20 00:35:11,435 - sendrequests.py:54 - [sendrequests:run_main] - 请求头:{'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'token': '${get_extract_data(token)}'}
-INFO - 2025-11-20 00:35:11,435 - sendrequests.py:55 - [sendrequests:run_main] - Cookies:None
-INFO - 2025-11-20 00:35:11,439 - sendrequests.py:59 - [sendrequests:run_main] - 请求参数:{'data': {'user_name': 'test01', 'passwd': 'admin123'}}
-ERROR - 2025-11-20 00:35:11,444 - apiutil.py:95 - [apiutil:specification_yaml] - 请求处理异常: 'extract.yaml'
