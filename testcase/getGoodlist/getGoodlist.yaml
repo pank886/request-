@@ -15,4 +15,4 @@
         - contains: {'error_code': '0000'}
       extract_list:
 #        goodList: '"goodsId":"([^"]+)"'
-        goodList: "$.goodsList[*].goodsId"
+        goodsId: "$.goodsList[*].goodsId"

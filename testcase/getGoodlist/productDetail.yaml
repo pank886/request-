@@ -1,0 +1,14 @@
+- baseInfo:
+    api_name: 获取商品详情接口
+    url: /coupApply/cms/productDetail
+    method: post
+    header:
+      Content-Type: application/json;charset=UTF-8
+  testCase:
+    - case_name: 商品详情获取
+      json:
+        pro_id: ${get_extract_data(goodsId, 0)}
+        page: 1
+        size: 20
+      validation:
+        - contains: {'error_code': '0000'}

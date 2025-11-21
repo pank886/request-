@@ -13,3 +13,8 @@ class TestGetGoodlist:
     @pytest.mark.parametrize('params', get_testcase_yaml('./testcase/getGoodlist/getGoodlist.yaml'))
     def test_Goodlist(self, params):
         RequestsBase().specification_yaml(params)
+
+    @allure.story('商品详情查看')
+    @pytest.mark.parametrize('params', get_testcase_yaml('./testcase/getGoodlist/productDetail.yaml'))
+    def test_productDetail(self, params):
+        RequestsBase().specification_yaml(params)

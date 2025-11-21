@@ -57,10 +57,10 @@ class ReadYamlData:
             pass
         else:
             print('extract.yaml文件不存在')
-            with open('../extract.yaml', 'w', encoding ='utf-8'):
+            with open(file_path, 'w', encoding ='utf-8'):
                 print('extract.yaml文件已创建')
 
-        with open('../extract.yaml', 'r', encoding ='utf-8') as rf_e:
+        with open(file_path, 'r', encoding ='utf-8') as rf_e:
             extract_yaml = yaml.safe_load(rf_e)
             return extract_yaml[node_name]
 
