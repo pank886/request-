@@ -8,6 +8,9 @@ from common.debugtilk import DebugTalk
 from conf.operationConfig import OperationConfig
 from common.sendrequests import SendRequests
 from common.recordlog import logs
+from common.assertions import Assertions
+
+assert_res = Assertions()
 
 class RequestsBase:
 
@@ -87,10 +90,15 @@ class RequestsBase:
                 allure.attach(res.text, f'接口响应信息', allure.attachment_type.TEXT)
                 allure.attach(str(res.status_code), f'接口状态码: {res.status_code}', allure.attachment_type.TEXT)
 
+                res_json = res.json()
+
                 if extract is not None:
                     self.extract_data(extract, res_text)
                 if extract_list is not None:
                     self.extract_list_data(extract_list, res_text)
+
+                #处理接口断言
+                assert_res.assert_result(validation, res_json, res.status_code)
 
         except Exception as e:
             logs.error("请求处理异常: %s", str(e))

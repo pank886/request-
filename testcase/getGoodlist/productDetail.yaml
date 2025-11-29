@@ -7,7 +7,7 @@
   testCase:
     - case_name: 商品详情获取
       json:
-        pro_id: ${get_extract_data(goodsId, 0)}
+        pro_id: ${get_extract_data_list(goodsId, 0)}
         page: 1
         size: 20
       validation:
