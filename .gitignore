@@ -9,6 +9,7 @@ htmlcov/
 .venv/
 venv/
 log/
+extract.yaml
 # IDE
 .idea/
 report/
