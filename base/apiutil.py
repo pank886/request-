@@ -107,69 +107,6 @@ class RequestsBase:
     def extract_data(self, testcase_extract, response):
         """
         提取接口返回值：支持 JSONPath（$开头）和正则表达式
-        - JSONPath：提取所有匹配项（返回列表），若无匹配则写默认提示
-        - 正则：使用 re.search（单次匹配）或 re.findall（含 (.+?) 时多匹配）
-        """
-        if not testcase_extract:
-            return
-
-        json_obj = None  # 缓存解析后的 JSON
-
-        for key, value in testcase_extract.items():
-            try:
-                value_str = str(value).strip()
-
-                # ========== 1. JSONPath 提取（以 $ 开头）==========
-                if value_str.startswith("$"):
-                    if json_obj is None:
-                        try:
-                            json_obj = json.loads(response)
-                        except json.JSONDecodeError:
-                            logs.error("响应不是合法 JSON，跳过所有 JSONPath 提取")
-                            json_obj = False  # 标记失败，避免重复尝试
-                    if json_obj is False:
-                        continue
-
-                    matches = jsonpath_ng.parse(value_str).find(json_obj)
-                    if matches:
-                        # 提取所有匹配值（即使只有一个，也返回列表）
-                        result = [match.value for match in matches]
-                    else:
-                        result = "未提取到数据，该接口返回结果可能为空"
-
-                    logs.info(f'JSON 提取 [{key}]: {result}')
-                    self.read.write_yaml_data({key: result})
-
-                # ========== 2. 正则提取（其他情况）==========
-                else:
-                    # 判断是否包含捕获组，决定用 findall 还是 search
-                    if "(.+?)" in value_str or "(.*?)" in value_str or re.search(r'$[^)]+$', value_str):
-                        # 多匹配：使用 findall
-                        ext_list = re.findall(value_str, response, re.S)
-                        if ext_list:
-                            result = ext_list
-                            logs.info(f'正则提取（多匹配）[{key}]: {result}')
-                        else:
-                            result = "正则未匹配到任何内容"
-                            logs.warning(f"正则未匹配 [{key}]: {value_str}")
-                    else:
-                        # 单匹配：使用 search
-                        match = re.search(value_str, response, re.S)
-                        if match:
-                            result = match.group(0)  # 或 group(1) 如果有分组
-                            logs.info(f'正则提取（单匹配）[{key}]: {result}')
-                        else:
-                            result = "正则未匹配到内容"
-                            logs.warning(f"正则未匹配 [{key}]: {value_str}")
-
-                    self.read.write_yaml_data({key: result})
-
-            except Exception as e:
-                logs.error(f"提取 [{key}] 时异常，表达式: {value}, 错误: {e}", exc_info=True)
-
-    def extract_data(self, testcase_extract, response):
-        """
-        提取接口返回值：支持 JSONPath（$开头）和正则表达式
         """
         if not testcase_extract:
             return
