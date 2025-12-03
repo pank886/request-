@@ -11,7 +11,8 @@
         user_name: test01
         passwd: admin123
       validation:
-        - contains: {'msg': '登录成功'}
+#        - contains: {'msg': '登录成功'}
+        - eq: {'msg':'登录成功1'}
       extract:
 #        token: '"token":"(.*?)"'
         token: $.token

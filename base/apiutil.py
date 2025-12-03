@@ -99,10 +99,11 @@ class RequestsBase:
 
                 #处理接口断言
                 assert_res.assert_result(validation, res_json, res.status_code)
-
+        except AssertionError:
+            raise
         except Exception as e:
             logs.error("请求处理异常: %s", str(e))
-            raise RuntimeError(f"测试执行失败: {e}") from e
+            raise
 
     def extract_data(self, testcase_extract, response):
         """

@@ -102,8 +102,38 @@ class Assertions:
             logs.error(msg)
             raise AssertionError(msg)
 
-    def not_equals_assert(self):
-        """不相等模式"""
+    def not_equals_assert(self, value, response):
+        """
+        不相等校验：校验 response 是否与 value 中 key 值不同
+        :param value:预期结果，yaml文件当中validation关键字下的结果,必须为dict类型
+        :param response:实际返回值,必须为dict类型
+        :return:
+        """
+        value_dict = to_dict(value)
+        response_dict = to_dict(response)
+        # 所有输入装换成字典类型，不能转换的抛出异常
+        if value_dict is None:
+            msg = f'用例参数无法转换为字典格式：“{value}”'
+            logs.error(msg)
+            raise AssertionError(msg)
+        if response_dict is None:
+            msg = f'返回值参数无法转换为字典格式：“{response}”'
+            logs.error(msg)
+            raise AssertionError(msg)
+            # 检查 value 中的每个 key 是否都在 response 中
+        res_list = [k for k in value_dict if k not in response_dict]
+        if res_list:
+            msg = f'返回值 “{response}” 中缺少预期 key “{value}”'
+            logs.error(msg)
+            raise AssertionError(msg)
+        # 构建 response 的子集（只保留 value 中的 key）
+        response_subset = {k: response_dict[k] for k in value_dict}
+        if operator.eq(value_dict, response_subset):
+            msg = f'不相等断言失败：实际值等于预期值。预期 "{value}"，实际 "{response_subset}"'
+            logs.error(msg)
+            raise AssertionError(msg)
+        else:
+            logs.info(f'不相等断言成功：实际值 "{response_subset}" 不等于预期值 "{value}"')
 
     def assert_result(self, expected, response, status_code):
         """
@@ -120,9 +150,13 @@ class Assertions:
                         self.contains_assert(value, response, status_code)
                     elif key == 'eq':
                         self.equals_assert(value, response)
+                    elif key == 'not_eq':
+                        self.not_equals_assert(value, response)
                     else:
                         raise AssertionError(f"不支持的断言类型: '{key}'，当前支持: 'eq', 'contains', 'not_eq'")
             logs.info('测试成功')
+        except AssertionError:
+            raise
         except Exception as e:
             logs.error(f'测试失败！\n 异常信息：{e}')
             raise
