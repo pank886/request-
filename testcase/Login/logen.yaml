@@ -12,7 +12,10 @@
         passwd: admin123
       validation:
 #        - contains: {'msg': '登录成功'}
-        - eq: {'msg':'登录成功1'}
+#        - eq: {'msg':'登录成功'}
+        - db:
+            sql: SELECT o.authority_objects,p.* FROM `lift_authority_for_org_person` p LEFT JOIN lift_authority_for_org o on p.authority_code=o.`CODE` where PERSON_CODE = %s
+            data: [testB95324089]
       extract:
 #        token: '"token":"(.*?)"'
         token: $.token

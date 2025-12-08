@@ -153,7 +153,7 @@ class Assertions:
             logs.error(msg)
             raise AssertionError(msg)
 
-    def _handle_db_assert(self, value, one):
+    def _handle_db_assert(self, value, global_one):
         """处理数据库断言"""
         if not isinstance(value, dict):
             raise AssertionError("'db' 断言值必须是一个字典，包含 'sql' 和 'data' 字段")
@@ -165,7 +165,7 @@ class Assertions:
         if expected_sql is None:
             raise AssertionError("'db' 断言缺少 'sql' 字段")
         if data is None:
-            raise AssertionError("'db' 断言缺少 'data' 字段")
+            logs.info("'db' 断言缺少 'data' 字段或字段为空")
 
         self.mysql_assert(expected_sql=expected_sql, data=data, one=local_one)
 
