@@ -22,7 +22,7 @@ class CommectMysql:
         }
         try:
             self.conn = pymysql.connect(**mysql_conf, charset = 'utf8mb4')
-            self.cursor = self.conn.cursor()
+            self.cursor = self.conn.cursor(cursor = pymysql.cursors.DictCursor)
             logs.info("""
                 成功连接到Mysql数据库
                 host：{host}
@@ -31,6 +31,14 @@ class CommectMysql:
             """.format(**mysql_conf))
         except Exception as e:
             logs.error(e)
+
+    def close(self):
+        """关闭数据库连接"""
+        if hasattr(self, 'cursor') and self.cursor:
+            self.cursor.close()
+        if hasattr(self, 'conn') and self.conn:
+            self.conn.close()
+        logs.info("MySQL 连接已关闭")
 
     def execute_updata(self, sql, data=None):
         """
@@ -48,6 +56,8 @@ class CommectMysql:
         except Exception as e:
             self.conn.rollback()
             logs.error(f"写操作失败: {e}\nSQL: {sql}\nData: {data}")
+        finally:
+            self.close()
 
     def executemany_updata(self, sql, data=None):
         """
@@ -67,12 +77,14 @@ class CommectMysql:
         except Exception as e:
             self.conn.rollback()
             logs.error(f"插入失败: {e}\nSQL: {sql}\nData: {data}")
+        finally:
+            self.close()
 
-    def query(self, sql, params=None, one=False):
+    def query(self, sql, data=None, one=False):
         """
         查询操作
         :param sql: SQL 查询语句（建议使用 %s 占位符）
-        :param params: 参数（元组/列表/字典），用于填充占位符
+        :param data: 参数（元组/列表/字典），用于填充占位符
         :param one: 是否只返回第一条结果（True → dict；False → list of dict）
         :return:
             - one=True:  字典（如 {'id': 1, 'name': 'Alice'}）或 None
@@ -80,10 +92,10 @@ class CommectMysql:
         """
         try:
             # 执行查询
-            if params is None:
+            if data is None:
                 self.cursor.execute(sql)
             else:
-                self.cursor.execute(sql, params)
+                self.cursor.execute(sql, data)
 
             # 获取列名
             columns = [desc[0] for desc in self.cursor.description] if self.cursor.description else []
@@ -99,15 +111,9 @@ class CommectMysql:
                 return [dict(zip(columns, row)) for row in rows]
 
         except Exception as e:
-            logs.error(f"查询失败： {e}\nSQL: {sql}\nParams: {params}")
-
-    def close(self):
-        """关闭数据库连接"""
-        if hasattr(self, 'cursor') and self.cursor:
-            self.cursor.close()
-        if hasattr(self, 'conn') and self.conn:
-            self.conn.close()
-        logs.info("MySQL 连接已关闭")
+            logs.error(f"查询失败： {e}\nSQL: {sql}\nParams: {data}")
+        finally:
+            self.close()
 
 if __name__ == '__main__':
     com = CommectMysql()

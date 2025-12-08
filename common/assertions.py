@@ -5,6 +5,7 @@ import json
 
 from common.recordlog import logs
 from typing import Any, Optional
+from common.connection import CommectMysql
 
 def to_dict(obj: Any) -> Optional[dict]:
     """尝试将 obj 转换为 dict，若失败则返回 None"""
@@ -71,7 +72,7 @@ class Assertions:
 
     def equals_assert(self, value, response):
         """
-        相等校验：校验 response 是否包含 value 中所有 key 且值完全相等（允许 response 有多余字段）
+        第二种模式，相等校验：校验 response 是否包含 value 中所有 key 且值完全相等（允许 response 有多余字段）
         :param value:预期结果，yaml文件当中validation关键字下的结果,必须为dict类型
         :param response:实际返回值,必须为dict类型
         :return:
@@ -104,7 +105,7 @@ class Assertions:
 
     def not_equals_assert(self, value, response):
         """
-        不相等校验：校验 response 是否与 value 中 key 值不同
+        第三种模式，不相等校验：校验 response 是否与 value 中 key 值不同
         :param value:预期结果，yaml文件当中validation关键字下的结果,必须为dict类型
         :param response:实际返回值,必须为dict类型
         :return:
@@ -135,26 +136,78 @@ class Assertions:
         else:
             logs.info(f'不相等断言成功：实际值 "{response_subset}" 不等于预期值 "{value}"')
 
-    def assert_result(self, expected, response, status_code):
+    def mysql_assert(self, expected_sql, data, one=False):
+        """
+        第四种模式，数据库断言校验，校验数据库中是否能查询到sql语句查询信息
+        :param expected_sql: sql语句使用 %s 占位符
+        :param data: 参数（元组/列表/字典），用于填充占位符
+        :param one: 是否仅展示第一个结果
+        :return:
+        """
+        conn = CommectMysql()
+        db_value = conn.query(expected_sql, data, one=one)
+        if db_value:
+            logs.info(f'数据库断言成功, 查询结果为{db_value}')
+        else:
+            msg = f'数据库查询失败，检查查询语句 “{expected_sql}” ，查询条件 “{data}”'
+            logs.error(msg)
+            raise AssertionError(msg)
+
+    def _handle_db_assert(self, value, one):
+        """处理数据库断言"""
+        if not isinstance(value, dict):
+            raise AssertionError("'db' 断言值必须是一个字典，包含 'sql' 和 'data' 字段")
+
+        expected_sql = value.get('sql')
+        data = value.get('data')
+        local_one = value.get('one', global_one)
+
+        if expected_sql is None:
+            raise AssertionError("'db' 断言缺少 'sql' 字段")
+        if data is None:
+            raise AssertionError("'db' 断言缺少 'data' 字段")
+
+        self.mysql_assert(expected_sql=expected_sql, data=data, one=local_one)
+
+    def assert_result(self, expected, response, status_code, one=False):
         """
         断言模式，通过all_flag标记
         :param expected: 预期结果
         :param response: 实际返回结果,需要json格式
         :param status_code: 接口返回状态码
+        :param one: 数据库查询是否只取第一条
         :return:
         """
+        if not isinstance(expected, list):
+            raise AssertionError("'expected' 必须是一个列表")
+
+            # 断言处理器映射
+        handlers = {
+            'contains': lambda v: self.contains_assert(v, response, status_code),
+            'eq': lambda v: self.equals_assert(v, response),
+            'ne': lambda v: self.not_equals_assert(v, response),
+            'db': lambda v: self._handle_db_assert(v, one)
+        }
+
         try:
-            for yq in expected:
-                for key, value in yq.items():
-                    if key == 'contains':
-                        self.contains_assert(value, response, status_code)
-                    elif key == 'eq':
-                        self.equals_assert(value, response)
-                    elif key == 'not_eq':
-                        self.not_equals_assert(value, response)
-                    else:
-                        raise AssertionError(f"不支持的断言类型: '{key}'，当前支持: 'eq', 'contains', 'not_eq'")
-            logs.info('测试成功')
+            for idx, yq in enumerate(expected):
+                if not isinstance(yq, dict):
+                    raise AssertionError(f"第 {idx + 1} 个断言必须是字典，当前值: {yq}")
+
+                if len(yq) != 1:
+                    raise AssertionError(f"每个断言块只能包含一个断言类型，当前有 {len(yq)} 个: {list(yq.keys())}")
+
+                key, value = next(iter(yq.items()))
+
+                if key not in handlers:
+                    raise AssertionError(
+                        f"不支持的断言类型: '{key}'，"
+                        f"当前支持: {', '.join(handlers.keys())}"
+                    )
+
+                handlers[key](value)
+
+            logs.info('所有断言通过，测试成功')
         except AssertionError:
             raise
         except Exception as e:
