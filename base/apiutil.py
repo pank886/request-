@@ -102,6 +102,7 @@ class RequestsBase:
         except AssertionError:
             raise
         except Exception as e:
+            
             logs.error("请求处理异常: %s", str(e))
             raise
 

@@ -13,5 +13,5 @@ if __name__ == '__main__':
                  './testcase',
                  f'--alluredir={allure_results_dir}'
                  ])
-
+    shutil.copy('./environment.xml', './report/temp')
     os.system(f'allure serve ./report/temp')

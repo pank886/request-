@@ -1,0 +1,18 @@
+<environment>
+    <parameter>
+        <key>system</key>
+        <value>window 11</value>
+    </parameter>
+    <parameter>
+        <key>python version</key>
+        <value>Python 3.13.2</value>
+    </parameter>
+    <parameter>
+        <key>allure version</key>
+        <value>2.21.0</value>
+    </parameter>
+    <parameter>
+        <key>项目名</key>
+        <value>基线版本 接口自动化测试</value>
+    </parameter>
+</environment>
