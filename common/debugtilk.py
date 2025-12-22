@@ -10,7 +10,7 @@ class DebugTalk:
         self.read = ReadYamlData()
 
     def get_extract_order_data(self, data, randoms):
-        if randoms not in [0, -1, -2]:
+        if randoms not in [0, -1]:
             return data[randoms - 1]
 
     def get_extract_data(self, node_name, sec_node_name = None, randoms = None):
@@ -18,7 +18,7 @@ class DebugTalk:
         读取extract.yaml的数据
         :param node_name: 读取extract.yaml文件中的key值
         :param sec_node_name: 读取嵌套的key值
-        :param random: None 数组顺序展示 0 随机读取 -1 字符串展示
+        :param randoms: None 数组顺序展示 0 随机读取 -1 字符串展示
         :return:
         """
         data = self.read.get_extract_yaml(node_name, sec_node_name)
@@ -36,7 +36,7 @@ class DebugTalk:
         """
         读取extract.yaml的数据
         :param node_name: 读取extract.yaml文件中的key值
-        :param random: None 数组顺序展示 0 随机读取 -1 字符串展示
+        :param randoms: None 数组顺序展示 0 随机读取 -1 字符串展示
         :return:
         """
         data = self.read.get_extract_yaml(node_name)
@@ -49,11 +49,3 @@ class DebugTalk:
             }
             data = data_value[randoms]
         return data
-
-    def md5_params(self, params):
-        return 'sadfsdf' + str(params)
-
-
-if __name__ == '__main__':
-    debug = DebugTalk()
-    print(debug.get_extract_data('rerev', 3))

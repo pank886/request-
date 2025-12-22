@@ -170,8 +170,3 @@ class RequestsBase:
         except Exception as e:
             logs.error("接口返回值提取异常，检查yaml文件extract表达式是否正确: %s", str(e))
 
-
-if __name__ == '__main__':
-    req = RequestsBase()
-    data = get_testcase_yaml('../testcase/Login/logen.yaml')[0]
-    print(req.specification_yaml(data))

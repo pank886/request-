@@ -1,3 +1,7 @@
+"""
+读写yaml文件
+"""
+
 import os
 
 import yaml
@@ -68,24 +72,3 @@ class ReadYamlData:
         """清空extrac.yaml文件的数据"""
         with open(FILE_PATH['extract'], 'r+') as f:
             f.truncate(0)
-
-if __name__ == '__main__':
-    res = get_testcase_yaml('../testcase/Login/logen.yaml')[0]
-    url = res['baseInfo']['url']
-    method = res['baseInfo']['method']
-    header = res['baseInfo']['header']
-    data = res['testCase'][0]['data']
-    url_https = f"http://127.0.0.1:8787{url}"
-    from sendrequests import RequestsDemo
-    send = SendRequests()
-    print(data)
-    resd = send.run_main(url_https, data, header = None, method = method)
-    print(resd)
-
-    token = resd.get('token')
-    print(token)
-
-    write_date = {'token' : token}
-
-    read = ReadYamlData()
-    read.write_yaml_data(write_date)

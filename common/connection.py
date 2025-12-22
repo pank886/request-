@@ -110,10 +110,3 @@ class CommectMysql:
             logs.error(f"查询失败： {e}\nSQL: {sql}\nParams: {data}")
         finally:
             self.close()
-
-if __name__ == '__main__':
-    com = CommectMysql()
-    sql = 'SELECT o.authority_objects,p.* FROM `lift_authority_for_org_person` p LEFT JOIN lift_authority_for_org o on p.authority_code=o.`CODE` where PERSON_CODE = %s'
-    data = ['testB95324089']
-    db = com.query(sql, data)
-    print(db)
