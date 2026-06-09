@@ -4,7 +4,7 @@ import os
 import string
 import random
 
-
+#test
 class PlateGenerator:
     """车牌生成器，自动去重并持久化到文件"""
 
