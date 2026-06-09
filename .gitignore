@@ -13,3 +13,5 @@ extract.yaml
 # IDE
 .idea/
 report/
+data/
+testcase/VehicleAccess/

@@ -1,1 +1,0 @@
-{"timestamp":"2026-06-08T11:08:47.387+00:00","status":404,"error":"Not Found","path":"/park-access-parking-rule-new/mock/access/enter"}
