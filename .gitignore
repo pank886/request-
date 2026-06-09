@@ -8,10 +8,13 @@ htmlcov/
 .env
 .venv/
 venv/
-log/
+log/*
+!log/
 extract.yaml
 # IDE
 .idea/
-report/
-data/
+report/*
+!report/
+data/*
+!data/
 testcase/VehicleAccess/
