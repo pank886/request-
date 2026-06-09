@@ -10,11 +10,14 @@ htmlcov/
 venv/
 log/*
 !log/
+!log/.gitkeep
 extract.yaml
 # IDE
 .idea/
 report/*
 !report/
+!report/.gitkeep
 data/*
 !data/
+!data/.gitkeep
 testcase/VehicleAccess/
