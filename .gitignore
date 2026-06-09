@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+.venv/
+venv/
+log/
+extract.yaml
+# IDE
+.idea/
+report/

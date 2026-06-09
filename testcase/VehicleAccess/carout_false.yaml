@@ -1,0 +1,14 @@
+- baseInfo:
+    api_name: 出场
+    url: /mock/access/exit
+    method: post
+    header:
+      Content-Type: application/json;charset=UTF-8
+  testCase:
+    - case_name: 车辆出场_失败
+      json:
+        carNumber: ${get_extract_data_list(carInNumber, 0)}
+        time: 2026-05-29 14:33
+        deviceCode: 002
+      validation:
+        - eq: {'openGate': 'false'}

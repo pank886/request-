@@ -1,0 +1,17 @@
+- baseInfo:
+    api_name: 白名单添加
+    url: /park-access-parking-rule-new/mock/whitelist/add
+    method: post
+    header:
+      Content-Type: application/json;charset=UTF-8
+  testCase:
+    - case_name: 白名单添加
+      json:
+        carNumber: ${get_extract_data_list(carNumber, -1)}
+        startTime: 2026-05-27
+        endTime: 2029-05-27
+      input_extract:
+        # JSONPath 方式
+        carInNumber: "$.json.carNumber"
+      validation:
+        - eq: {'success': 'true'}

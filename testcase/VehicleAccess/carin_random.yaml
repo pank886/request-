@@ -1,0 +1,17 @@
+- baseInfo:
+    api_name: 入场_随机车牌
+    url: /park-access-parking-rule-new/mock/access/enter
+    method: post
+    header:
+      Content-Type: application/json;charset=UTF-8
+  testCase:
+    - case_name: 随机车辆进场
+      json:
+        carNumber: ${random_plates(1)}
+        time: 2026-05-27 14:33
+        deviceCode: 001
+      input_extract:
+        # JSONPath 方式
+        carInNumber: "$.json.carNumber"
+      validation:
+        - eq: {'openGate': 'true'}

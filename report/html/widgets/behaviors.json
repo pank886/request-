@@ -1,0 +1,1 @@
+{"total":2,"items":[{"uid":"e00b7700f98d22f9c6af3e54cbb61e2c","name":"临停车辆：进主场-扫车牌临停出场-收费","statistic":{"failed":4,"broken":0,"skipped":0,"passed":0,"unknown":0,"total":4}},{"uid":"41d1b32771360687daaae5a19e4b01ba","name":"包月车辆：进主场-扫车牌包月车出场-免费","statistic":{"failed":1,"broken":3,"skipped":0,"passed":0,"unknown":0,"total":4}}]}

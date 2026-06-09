@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pytest -m danyuan)",
+      "Bash(\"E:\\\\pycharm-2025.1\\\\allure\\\\allure-2.21.0\\\\bin\\\\allure\" --version)",
+      "Bash(java -version)",
+      "Bash(cmd //c \"E:\\\\pycharm-2025.1\\\\allure\\\\allure-2.21.0\\\\bin\\\\allure.bat\" --version)",
+      "Bash(cmd //c \"E:\\\\pycharm-2025.1\\\\allure\\\\allure-2.21.0\\\\bin\\\\allure.bat\" generate ./report/temp -o ./report/html --clean)",
+      "Bash(cmd *)",
+      "Bash(python -m pytest -m danyuan)",
+      "Bash(python -m pytest -m danyuan -k \"CarIn\")",
+      "Bash(curl *)",
+      "Bash(\"C:/Users/damai/PyCharmMiscProject/.venv/Scripts/python.exe\" -m http.server 63333)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill //pid 20380 //f)",
+      "Bash(taskkill //pid 34624 //f)",
+      "Bash(\".venv/Scripts/python.exe\" -m pip install pytest-order)",
+      "Bash(\".venv/Scripts/python.exe\" -m pytest -m danyuan --collect-only)",
+      "Bash(\".venv/Scripts/python.exe\" run.py danyuan)"
+    ]
+  }
+}

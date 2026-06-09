@@ -1,0 +1,13 @@
+- baseInfo:
+    api_name: pass
+    url: /mock/bill/latest
+    method: post
+    header:
+      Content-Type: application/json;charset=UTF-8
+  testCase:
+    - case_name: 车辆缴费出场
+      json:
+        carNumber: ${get_extract_data_list(carInNumber, 0)}
+      validation:
+        - eq: {'paid': 'true'}
+        - eq: {'payableAmount':'20'}
