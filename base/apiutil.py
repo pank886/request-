@@ -19,6 +19,23 @@ class RequestsBase:
         self.conf = OperationConfig()
         self.send = SendRequests()
 
+    def run_blocks(self, yaml_path):
+        """
+        串行执行YAML中所有block，一个失败不影响后续，汇总所有错误
+        :param yaml_path: YAML文件路径，同 get_testcase_yaml 参数
+        """
+        yaml_data = get_testcase_yaml(yaml_path)
+        errors = []
+        for block in yaml_data:
+            try:
+                self.specification_yaml(block)
+            except AssertionError as e:
+                api_name = block['baseInfo']['api_name']
+                case_name = block['testCase'][0].get('case_name', '未知')
+                errors.append(f"[{api_name} - {case_name}] {e}")
+        if errors:
+            raise AssertionError('\n'.join(errors))
+
     def replace_load(self, data):
         """
         yaml文件替换解析有${}格式的数据
@@ -31,7 +48,7 @@ class RequestsBase:
 
             if '${' in str_data and '}' in str_data:
                 #index检测字符串是否是子字符串，并找到字符串的索引位置
-                start_index = str_data.index('$')
+                start_index = str_data.index('${')
                 end_index = str_data.index('}', start_index)
                 ref_all_params = str_data[start_index:end_index + 1]
                 #取出函数名
@@ -41,9 +58,9 @@ class RequestsBase:
                 funcs_params = ref_all_params[ref_all_params.index('(') + 1:ref_all_params.index(')')]
                 #传入替换的参数获取对应的值
                 extract_data = getattr(DebugTalk(), func_name)(*funcs_params.split(',') if funcs_params else [])
-                str_data = str_data.replace(ref_all_params, str(extract_data))
+                str_data = str_data.replace(ref_all_params, str(extract_data), 1)
         #还原数据
-        if data and isinstance(data, dict):
+        if isinstance(data, (dict, list)):
             data = json.loads(str_data)
         else:
             data = str_data
@@ -52,7 +69,10 @@ class RequestsBase:
     def specification_yaml(self, case_info):
         """
         规范yaml测试用例写法
-        case_info: list类型，调试取case_info[0]-->dict
+        :param case_info: dict类型，单个baseInfo+testCase结构。
+            注意：get_testcase_yaml()返回的是list，不能直接传入。
+            ✅ @parametrize会自动解包list传入每个dict
+            ✅ fixture中需手动取 yaml_data[0] 传入
         """
         #限定参数类型
         params_type = ['params', 'data', 'json']
@@ -66,6 +86,12 @@ class RequestsBase:
             method = case_info['baseInfo']['method']
             allure.attach(method, f'请求方法:{method}')
             header = case_info['baseInfo']['header']
+            # 自动注入登录token
+            try:
+                token = self.read.get_extract_yaml('accessToken')
+                header['token'] = token
+            except (KeyError, FileNotFoundError, TypeError):
+                pass
             # 多个请求头以文本形式展示
             allure.attach(str(header), f'请求头:{header}', allure.attachment_type.TEXT)
             try:
@@ -76,44 +102,51 @@ class RequestsBase:
             #获取参数信息
             for tc in case_info['testCase']:
                 case_name = tc.pop('case_name', '未命名用例')
-                allure.attach(case_name, f'测试用例名称:{case_name}')
-                validation = tc.pop('validation', '未配置断言')
-                extract = tc.pop('extract', None)
-                extract_list = tc.pop('extract_list', None)
-                input_extract = tc.pop('input_extract', None)
+                api_name = case_info['baseInfo']['api_name']
+                with allure.step(f"{api_name} - {case_name}"):
+                    allure.attach(case_name, f'测试用例名称:{case_name}')
+                    validation = tc.pop('validation', '未配置断言')
+                    extract = tc.pop('extract', None)
+                    extract_list = tc.pop('extract_list', None)
+                    input_extract = tc.pop('input_extract', None) or tc.pop('Input_extract', None)
 
-                # original_request_params = {}
-                # for key in params_type:
-                #     if key in tc:
-                #         original_request_params[key] = tc[key]
+                    # original_request_params = {}
+                    # for key in params_type:
+                    #     if key in tc:
+                    #         original_request_params[key] = tc[key]
 
-                for key, value in tc.items():
-                    if key in params_type:
-                        tc[key] = self.replace_load(value)
+                    for key, value in tc.items():
+                        if key in params_type:
+                            tc[key] = self.replace_load(value)
 
-                actual_request_params = {}
-                for key in params_type:
-                    if key in tc:
-                        actual_request_params[key] = tc[key]
+                    # validation 中的 ${} 也需要解析
+                    if validation and isinstance(validation, list):
+                        validation = self.replace_load(validation)
 
-                res = self.send.run_main(name = api_name, case_name = case_name, url = url, header = header, method = method,
-                                         cookies = cookies, files = None, **tc)
-                res_text = res.text
-                allure.attach(res.text, f'接口响应信息', allure.attachment_type.TEXT)
-                allure.attach(str(res.status_code), f'接口状态码: {res.status_code}', allure.attachment_type.TEXT)
+                    actual_request_params = {}
+                    for key in params_type:
+                        if key in tc:
+                            actual_request_params[key] = tc[key]
 
-                if input_extract is not None:
-                    self.extract_input_data(input_extract, actual_request_params)
+                    res = self.send.run_main(name = api_name, case_name = case_name, url = url, header = header, method = method,
+                                             cookies = cookies, files = None, **tc)
+                    res_text = res.text
+                    allure.attach(res.text, f'接口响应信息', allure.attachment_type.TEXT)
+                    allure.attach(str(res.status_code), f'接口状态码: {res.status_code}', allure.attachment_type.TEXT)
 
-                res_json = res.json()
+                    res_json = res.json()
 
-                if extract is not None:
-                    self.extract_data(extract, res_text)
-                if extract_list is not None:
-                    self.extract_list_data(extract_list, res_text)
+                    # input_extract 从请求参数提取，不依赖响应，始终执行
+                    if input_extract is not None:
+                        self.extract_input_data(input_extract, actual_request_params)
 
-                #处理接口断言
-                assert_res.assert_result(validation, res_json, res.status_code)
+                    #处理接口断言（断言通过后才从响应提取数据）
+                    assert_res.assert_result(validation, res_json, res.status_code)
+
+                    if extract is not None:
+                        self.extract_data(extract, res_text)
+                    if extract_list is not None:
+                        self.extract_list_data(extract_list, res_text)
         except Exception as e:
             
             logs.error("请求处理异常: %s", str(e))

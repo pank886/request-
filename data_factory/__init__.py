@@ -17,3 +17,4 @@ def data_path(name):
 
 
 from data_factory.plate_generator import PlateGenerator
+from data_factory.time_utils import TimeUtils

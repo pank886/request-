@@ -38,12 +38,13 @@ class Assertions:
         :param status_code:响应参数
         :return:
         """
+        errors = []
         for assert_key, assert_value in value.items():
             if assert_key == 'status_code':
                 if assert_value != status_code:
                     msg = f'状态码断言失败：期望 {assert_value}，实际 {status_code}'
                     logs.error(msg)
-                    raise AssertionError(msg)
+                    errors.append(msg)
                 else:
                     logs.info(f'状态码断言成功：期望 {assert_value}，实际 {status_code}')
             else:
@@ -53,55 +54,90 @@ class Assertions:
                     if not resp_list:
                         msg = f'JSONPath "{assert_key}" 未匹配到任何值'
                         logs.error(msg)
-                        raise AssertionError(msg)
+                        errors.append(msg)
+                        continue
                     resp_value = resp_list[0]
                     if isinstance(resp_value, list):
                         resp_text = ''.join(str(x) for x in resp_value)
                     else:
                         resp_text = str(resp_value)
-                    if assert_value in resp_text:
+                    if str(assert_value) in resp_text:
                         logs.info('字符串包含断言成功，预期结果：【%s】, 实际结果:【%s】' % (assert_value, resp_text))
                     else:
-                        msg = f'包含断言失败：期望 "{assert_value}" 在字段 "{assert_key}" 的值 "{resp_text}" 中'
+                        msg = f'包含断言失败：在字段 "{assert_key}" 中，期望值为 "{assert_value}" ，实际值为 "{resp_text}"'
                         logs.error(msg)
-                        raise AssertionError(msg)
+                        errors.append(msg)
                 except Exception as e:
-                    logs.error(f'JSONPath 解析或断言异常: {e}')
-                    raise AssertionError(f'断言执行异常: {e}')
+                    msg = f'断言执行异常: {e}'
+                    logs.error(msg)
+                    errors.append(msg)
+        if errors:
+            raise AssertionError('\n'.join(errors))
         logs.info('全部包含断言通过')
 
     def equals_assert(self, value, response):
         """
         第二种模式，相等校验：校验 response 是否包含 value 中所有 key 且值完全相等（允许 response 有多余字段）
+        支持 JSONPath 表达式（如 $.[0].carNumber）作为 key，也支持简单 dict key。
         :param value:预期结果，yaml文件当中validation关键字下的结果,必须为dict类型
-        :param response:实际返回值,必须为dict类型
+        :param response:实际返回值，可以是 dict 或 list
         :return:
         """
         value_dict = to_dict(value)
-        response_dict = to_dict(response)
-        #所有输入装换成字典类型，不能转换的抛出异常
         if value_dict is None:
             msg = f'用例参数无法转换为字典格式：“{value}”'
             logs.error(msg)
             raise AssertionError(msg)
-        if response_dict is None:
-            msg = f'返回值参数无法转换为字典格式：“{response}”'
-            logs.error(msg)
-            raise AssertionError(msg)
-            # 检查 value 中的每个 key 是否都在 response 中
-        res_list = [k for k in value_dict if k not in response_dict]
-        if res_list:
-            msg = f'返回值 “{response}” 中，没有预期结果 “{value}” 中的key值'
-            logs.error(msg)
-            raise AssertionError(msg)
-        # 构建 response 的子集（只保留 value 中的 key）
-        response_subset = {k: response_dict[k] for k in value_dict}
-        if operator.eq(value_dict, response_subset):
-            logs.info(f'相等断言成功，接口实际结果为 "{response}" ， 等于预期结果 “{value}”')
-        else:
-            msg = f'相等断言失败，接口实际结果为 "{response}" ， 不等于预期结果 “{value}”'
-            logs.error(msg)
-            raise AssertionError(msg)
+
+        # 判断 response 是否为 list 类型（API 返回数组）
+        response_is_list = isinstance(response, list)
+        errors = []
+
+        for expected_key, expected_value in value_dict.items():
+            # 优先尝试作为 JSONPath 表达式解析
+            try:
+                expr = jsonpath_ng.parse(expected_key)
+                match_values = [match.value for match in expr.find(response)]
+                if not match_values:
+                    msg = f'JSONPath "{expected_key}" 未匹配到返回值中的任何值，response: {response}'
+                    logs.error(msg)
+                    errors.append(msg)
+                    continue
+                actual_value = match_values[0]
+            except Exception:
+                # JSONPath 解析失败，回退到简单 dict key 比较
+                if response_is_list:
+                    # 如果 response 是 list，尝试取第一个元素的 dict
+                    if len(response) > 0:
+                        response_dict = to_dict(response[0])
+                    else:
+                        response_dict = None
+                else:
+                    response_dict = to_dict(response)
+
+                if response_dict is None:
+                    msg = f'返回值参数无法转换为字典格式：“{response}”'
+                    logs.error(msg)
+                    errors.append(msg)
+                    continue
+
+                if expected_key not in response_dict:
+                    msg = f'返回值 “{response}” 中，没有预期结果 “{value}” 中的 key "{expected_key}"'
+                    logs.error(msg)
+                    errors.append(msg)
+                    continue
+                actual_value = response_dict[expected_key]
+
+            if not operator.eq(expected_value, actual_value):
+                msg = f'相等断言失败: key "{expected_key}" 期望值 "{expected_value}"，实际值 "{actual_value}"'
+                logs.error(msg)
+                errors.append(msg)
+            else:
+                logs.info(f'相等断言成功: {expected_key} = {expected_value}')
+
+        if errors:
+            raise AssertionError('\n'.join(errors))
+        logs.info(f'相等断言全部通过，接口实际结果为 "{response}"')
 
     def not_equals_assert(self, value, response):
         """
@@ -112,29 +148,28 @@ class Assertions:
         """
         value_dict = to_dict(value)
         response_dict = to_dict(response)
+        errors = []
         # 所有输入装换成字典类型，不能转换的抛出异常
         if value_dict is None:
-            msg = f'用例参数无法转换为字典格式：“{value}”'
-            logs.error(msg)
-            raise AssertionError(msg)
+            errors.append(f'用例参数无法转换为字典格式：“{value}”')
         if response_dict is None:
-            msg = f'返回值参数无法转换为字典格式：“{response}”'
-            logs.error(msg)
-            raise AssertionError(msg)
-            # 检查 value 中的每个 key 是否都在 response 中
+            errors.append(f'返回值参数无法转换为字典格式：“{response}”')
+        if errors:
+            raise AssertionError('\n'.join(errors))
+        # 检查 value 中的每个 key 是否都在 response 中
         res_list = [k for k in value_dict if k not in response_dict]
         if res_list:
-            msg = f'返回值 “{response}” 中缺少预期 key “{value}”'
-            logs.error(msg)
-            raise AssertionError(msg)
-        # 构建 response 的子集（只保留 value 中的 key）
-        response_subset = {k: response_dict[k] for k in value_dict}
-        if operator.eq(value_dict, response_subset):
-            msg = f'不相等断言失败：实际值等于预期值。预期 "{value}"，实际 "{response_subset}"'
-            logs.error(msg)
-            raise AssertionError(msg)
+            errors.append(f'返回值 “{response}” 中缺少预期 key “{value}”')
         else:
-            logs.info(f'不相等断言成功：实际值 "{response_subset}" 不等于预期值 "{value}"')
+            # 构建 response 的子集（只保留 value 中的 key）
+            response_subset = {k: response_dict[k] for k in value_dict}
+            if operator.eq(value_dict, response_subset):
+                errors.append(f'不相等断言失败：实际值等于预期值。预期 "{value}"，实际 "{response_subset}"')
+            else:
+                logs.info(f'不相等断言成功：实际值 "{response_subset}" 不等于预期值 "{value}"')
+
+        if errors:
+            raise AssertionError('\n'.join(errors))
 
     def mysql_assert(self, expected_sql, data, one=False):
         """
@@ -190,22 +225,32 @@ class Assertions:
         }
 
         try:
+            all_errors = []
             for idx, yq in enumerate(expected):
                 if not isinstance(yq, dict):
-                    raise AssertionError(f"第 {idx + 1} 个断言必须是字典，当前值: {yq}")
+                    all_errors.append(f"第 {idx + 1} 个断言必须是字典，当前值: {yq}")
+                    continue
 
                 if len(yq) != 1:
-                    raise AssertionError(f"每个断言块只能包含一个断言类型，当前有 {len(yq)} 个: {list(yq.keys())}")
+                    all_errors.append(f"每个断言块只能包含一个断言类型，当前有 {len(yq)} 个: {list(yq.keys())}")
+                    continue
 
                 key, value = next(iter(yq.items()))
 
                 if key not in handlers:
-                    raise AssertionError(
+                    all_errors.append(
                         f"不支持的断言类型: '{key}'，"
                         f"当前支持: {', '.join(handlers.keys())}"
                     )
+                    continue
 
-                handlers[key](value)
+                try:
+                    handlers[key](value)
+                except AssertionError as e:
+                    all_errors.append(str(e))
+
+            if all_errors:
+                raise AssertionError('\n'.join(all_errors))
 
             logs.info('所有断言通过，测试成功')
         except AssertionError:

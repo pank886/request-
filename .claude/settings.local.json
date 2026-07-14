@@ -16,7 +16,25 @@
       "Bash(taskkill //pid 34624 //f)",
       "Bash(\".venv/Scripts/python.exe\" -m pip install pytest-order)",
       "Bash(\".venv/Scripts/python.exe\" -m pytest -m danyuan --collect-only)",
-      "Bash(\".venv/Scripts/python.exe\" run.py danyuan)"
+      "Bash(\".venv/Scripts/python.exe\" run.py danyuan)",
+      "Bash(npm view *)",
+      "Bash(npm install *)",
+      "Bash(npm approve-scripts *)",
+      "Bash(claude --version)",
+      "Bash(where claude *)",
+      "Bash(npm ls *)",
+      "Bash(winget uninstall *)",
+      "Bash(mv testcase/VehicleAccess/*_002.yaml \"testcase/VehicleAccess/VehicleAccesstest_002/\")",
+      "Bash(mv testcase/VehicleAccess/*_003.yaml \"testcase/VehicleAccess/VehicleAccesstest_003/\")",
+      "Bash(python *)",
+      "Bash(pip list *)",
+      "Bash(findstr -i pytest)",
+      "Bash(kill %1)",
+      "Bash(C:/Users/damai/PyCharmMiscProject/.venv/Scripts/python.exe *)",
+      "Bash(find C:\\\\Users\\\\damai\\\\PyCharmMiscProject *)",
+      "Bash(grep -v \"^--$\")",
+      "Bash(awk '/class TestSubConfiguration_003/,/^@allure\\\\.story|^$/' \"C:\\\\Users\\\\damai\\\\PyCharmMiscProject\\\\testcase\\\\SubConfiguration\\\\test_SubConfiguration.py\")",
+      "Bash(pip show *)"
     ]
   }
 }

@@ -1,7 +1,7 @@
 import random
 
 from common.readyaml import ReadYamlData
-from data_factory import PlateGenerator
+from data_factory import PlateGenerator, TimeUtils
 
 
 class DebugTalk:
@@ -50,3 +50,23 @@ class DebugTalk:
         :return: 逗号分隔的车牌字符串
         """
         return PlateGenerator().generate(count)
+
+    def get_current_time(self, fmt):
+        """
+        获取当前时间字符串
+        :param fmt: "ydm" → "2026-05-27"， "hms" → "2026-05-27 14:33:00"
+        :return: 格式化后的时间字符串
+        """
+        return TimeUtils.get_current_time(fmt)
+
+    def split_extract_data(self, node_name, index=0):
+        """
+        从extract.yaml中读取逗号拼接的数据，按索引拆分为单个
+        :param node_name: extract.yaml中的key值
+        :param index: 索引（0开始），取第N个元素
+        :return: 拆分后的单个值
+        """
+        raw = str(self.read.get_extract_yaml(node_name))
+        parts = [p.strip() for p in raw.split(',')]
+        idx = int(index)
+        return parts[idx] if idx < len(parts) else parts[0]

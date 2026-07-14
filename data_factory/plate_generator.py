@@ -45,7 +45,7 @@ class PlateGenerator:
         if count <= 0:
             return ""
 
-        max_total = 500
+        max_total = 2000
         if len(self._existing_plates) + count > max_total:
             count = max_total - len(self._existing_plates)
             if count <= 0:
@@ -59,6 +59,9 @@ class PlateGenerator:
             province = random.choice(provinces)
             letter = random.choice(letters)
             suffix = ''.join(random.choices(string.digits + letters, k=5))
+            if not any(c.isdigit() for c in suffix):
+                idx = random.randrange(5)
+                suffix = suffix[:idx] + random.choice(string.digits) + suffix[idx+1:]
             plate = f"{province}{letter}{suffix}"
             if plate not in self._existing_plates:
                 self._existing_plates.add(plate)

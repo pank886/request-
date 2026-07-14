@@ -1,11 +1,19 @@
 import json
+import time
 import allure
 import pytest
 import requests
 
 from common.recordlog import logs
 from common.readyaml import ReadYamlData
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
+# 重试配置
+RETRY_TOTAL = 3           # 最大重试次数
+RETRY_BACKOFF = 2         # 退避因子（秒）：第n次重试等待 backoff * (2^n) 秒
+RETRY_STATUS_CODES = [500, 502, 503, 504]  # 哪些状态码触发重试
+RETRY_TIMEOUT = 30        # 单次请求超时（秒）
 
 
 class SendRequests(object):
@@ -13,20 +21,31 @@ class SendRequests(object):
         self.read = ReadYamlData()
 
     def send_request(self, **kwargs):
-        """发起请求"""
-        # cookie = {}
+        """发起请求（带超时重试）"""
         session = requests.session()
+
+        # 配置重试策略
+        retry = Retry(
+            total=RETRY_TOTAL,
+            backoff_factor=RETRY_BACKOFF,
+            status_forcelist=RETRY_STATUS_CODES,
+            allowed_methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount('http://', adapter)
+        session.mount('https://', adapter)
+
+        kwargs.setdefault('timeout', RETRY_TIMEOUT)
         result = None
         try:
             result = session.request(**kwargs)
             set_cookie = requests.utils.dict_from_cookiejar(result.cookies)
             if set_cookie:
-                # cookie['Cookie'] = set_cookie
                 self.read.write_yaml_data(set_cookie)
                 logs.info(f'cookie:{set_cookie}')
             logs.info(f'接口实际返回信息{result.text if result.text else result}')
         except requests.exceptions.ConnectionError as e:
-            logs.error(f'接口连接服务器异常{e}')
+            logs.error(f'接口连接服务器异常（已重试{RETRY_TOTAL}次）: {e}')
             pytest.fail('接口请求异常，可能是request的连接数过多或者请求速度过快导致程序报错！')
         except requests.exceptions.HTTPError as e:
             logs.error(f'http异常{e}')
