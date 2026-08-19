@@ -36,8 +36,3 @@ class OperationConfig:
     def get_MySQL(self, option):
         """获取接口服务器ip地址"""
         return self.get_section_for_data('MySQL', option)
-
-
-if __name__ == '__main__':
-    open = OperationConfig()
-    print(open.get_section_for_data('api_envi', 'host'))

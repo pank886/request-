@@ -88,6 +88,5 @@ class ReadYamlData:
             return extract_yaml[node_name]
 
     def clear_yaml_data(self):
-        """清空extrac.yaml文件的数据"""
-        with open(FILE_PATH['extract'], 'r+') as f:
-            f.truncate(0)
+        """清空extract.yaml文件的数据，文件不存在则自动创建"""
+        open(FILE_PATH['extract'], 'w').close()

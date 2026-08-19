@@ -20,5 +20,29 @@ report/*
 data/*
 !data/
 !data/.gitkeep
-testcase/VehicleAccess/
+testcase/*
+!testcase/__init__.py
 conf/config.ini
+
+# Logs
+*.log
+
+# Allure runtime
+environment.xml
+
+# Python packaging
+*.egg-info/
+dist/
+build/
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
+*.swo
+
+# Claude Code
+.claude/settings.local.json
+
+skill_YAML_CHECK.md

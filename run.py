@@ -1,9 +1,19 @@
+"""
+测试执行入口，支持路径+marker双重筛选，自动生成Allure报告。
+
+用法:
+    python run.py                              # 全部路径 + 全部用例
+    python run.py -p testcase/SubConfiguration/  # 只跑指定路径
+    python run.py -m danyuan                    # 全部路径，只跑danyuan标记
+    python run.py -p testcase/ -m danyuan        # 指定路径 + 指定标记
+"""
 import pytest
 import os
 import shutil
 import sys
 import subprocess
 import webbrowser
+import argparse
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
@@ -29,36 +39,59 @@ def kill_old_server():
 
 
 def serve_report():
+    if not REPORT_HTML.exists():
+        print(f"错误: 报告目录不存在 {REPORT_HTML}")
+        return
     kill_old_server()
     print(f"报告地址: http://localhost:{PORT}")
     print("按 Ctrl+C 停止服务器")
     webbrowser.open(f"http://localhost:{PORT}")
     python = BASE_DIR / ".venv" / "Scripts" / "python.exe"
+    # 先切到报告目录再启动服务，比 -d 参数更稳定
+    os.chdir(str(REPORT_HTML))
     subprocess.run(
-        [str(python), "-m", "http.server", str(PORT), "-d", str(REPORT_HTML)],
-        cwd=BASE_DIR,
+        [str(python), "-m", "http.server", str(PORT)],
     )
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='运行测试并生成Allure报告')
+    parser.add_argument('-p', '--path', default='',
+                        help='测试路径，如 testcase/SubConfiguration/（空=全部路径）')
+    parser.add_argument('-m', '--mark', default='',
+                        help='marker表达式，如 danyuan（空=全部marker）')
+    args, _ = parser.parse_known_args()
+
     allure_results_dir = "./report/temp"
-    if os.path.exists(allure_results_dir):
-        try:
-            shutil.rmtree(allure_results_dir)
-        except PermissionError:
-            print("警告: 无法删除旧报告目录，文件被占用，跳过清理")
+    allure_html_dir = str(REPORT_HTML)
+    for d in (allure_results_dir, allure_html_dir):
+        if os.path.exists(d):
+            try:
+                shutil.rmtree(d)
+            except PermissionError:
+                print(f"警告: 无法删除 {d}，文件被占用，跳过清理")
 
-    args = ['-v', '-s', f'--alluredir={allure_results_dir}']
+    pytest_args = ['-c', 'pytest.ini', '-v', '-s',
+                   f'--alluredir={allure_results_dir}']
 
-    if len(sys.argv) > 1:
-        mark_name = sys.argv[1]
-        print(f"正在执行标记为 [{mark_name}] 的测试...")
-        args.extend(['-m', mark_name])
+    # 路径筛选（-p）
+    target_path = args.path.strip() if args.path else ''
+    if target_path:
+        pytest_args.append(target_path)
+        print(f"路径筛选: {target_path}")
     else:
-        print("未指定标记，执行所有测试...")
-        args.append('./testcase')
+        pytest_args.append('./testcase')
 
-    pytest.main(args)
+    # marker筛选（-m）
+    if args.mark:
+        pytest_args.extend(['-m', args.mark])
+        print(f"标记筛选: -m {args.mark}")
+
+    if not target_path and not args.mark:
+        print("执行所有路径 + 所有用例")
+    print(f"pytest参数: {' '.join(pytest_args)}")
+
+    pytest.main(pytest_args)
 
     if os.path.exists('environment.xml'):
         shutil.copy('environment.xml', './report/temp')
