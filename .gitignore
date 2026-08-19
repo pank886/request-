@@ -44,3 +44,5 @@ Thumbs.db
 
 # Claude Code
 .claude/settings.local.json
+
+skill_YAML_CHECK.md

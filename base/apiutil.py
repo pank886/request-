@@ -12,6 +12,44 @@ from common.assertions import Assertions
 
 assert_res = Assertions()
 
+
+def parse_dollar_args(params_str):
+    """解析 ${fn(...)} 括号内的参数：按逗号拆分（忽略引号内逗号），并剥掉参数引号。
+    兼容单参数/多参数，参数可带单引号、双引号或不带引号。
+    注：replace_load 对 dict 会先 json.dumps，双引号会被转义成 \\"，
+        因此剥引号前需先 replace('\\\\"', '"') 还原，否则会留下尾随反斜杠。
+    """
+    if not params_str:
+        return []
+    args = []
+    cur = ''
+    quote = None
+    depth = 0
+    for ch in params_str:
+        if quote:
+            cur += ch
+            if ch == quote:
+                quote = None
+        elif ch in "'\"":
+            quote = ch
+            cur += ch
+        elif ch == '(':
+            depth += 1
+            cur += ch
+        elif ch == ')':
+            depth -= 1
+            cur += ch
+        elif ch == ',' and depth == 0:
+            args.append(cur.strip())
+            cur = ''
+        else:
+            cur += ch
+    if cur.strip():
+        args.append(cur.strip())
+    # 剥引号：先还原 json.dumps 对双引号的 \" 转义，再统一剥单双引号
+    return [a.strip().replace('\\"', '"').strip("'\"").strip() for a in args]
+
+
 class RequestsBase:
 
     def __init__(self):
@@ -57,7 +95,7 @@ class RequestsBase:
                 #取出函数里面的参数值
                 funcs_params = ref_all_params[ref_all_params.index('(') + 1:ref_all_params.index(')')]
                 #传入替换的参数获取对应的值
-                extract_data = getattr(DebugTalk(), func_name)(*funcs_params.split(',') if funcs_params else [])
+                extract_data = getattr(DebugTalk(), func_name)(*parse_dollar_args(funcs_params))
                 str_data = str_data.replace(ref_all_params, str(extract_data), 1)
         #还原数据
         if isinstance(data, (dict, list)):
@@ -79,7 +117,7 @@ class RequestsBase:
         #获取yaml文件请求头信息
         try:
             base_url = self.conf.get_envi('host')
-            url = base_url + case_info['baseInfo']['url']
+            url = base_url + self.replace_load(case_info['baseInfo']['url'])
             allure.attach(url, f'接口地址:{url}')
             api_name = case_info['baseInfo']['api_name']
             allure.attach(api_name, f'接口名称:{api_name}')
@@ -90,6 +128,14 @@ class RequestsBase:
             try:
                 token = self.read.get_extract_yaml('accessToken')
                 header['token'] = token
+            except (KeyError, FileNotFoundError, TypeError):
+                pass
+            # 自动注入yq-app-code（从config.ini读取，由conftest.py的get_yq_app_code fixture写入extract.yaml）
+            # 特殊环境不需要此header时，在config.ini中置空或删除[yqAppCode]节即可
+            try:
+                yq_app_code = self.read.get_extract_yaml('yqAppCode')
+                if yq_app_code:
+                    header['yq-app-code'] = yq_app_code
             except (KeyError, FileNotFoundError, TypeError):
                 pass
             # 多个请求头以文本形式展示
@@ -134,7 +180,10 @@ class RequestsBase:
                     allure.attach(res.text, f'接口响应信息', allure.attachment_type.TEXT)
                     allure.attach(str(res.status_code), f'接口状态码: {res.status_code}', allure.attachment_type.TEXT)
 
-                    res_json = res.json()
+                    try:
+                        res_json = res.json()
+                    except Exception:
+                        res_json = {}
 
                     # input_extract 从请求参数提取，不依赖响应，始终执行
                     if input_extract is not None:

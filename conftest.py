@@ -4,6 +4,7 @@ import urllib3
 from common.recordlog import logs
 from common.readyaml import ReadYamlData
 from data_factory.plate_generator import PlateGenerator
+from conf.operationConfig import OperationConfig
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 read = ReadYamlData()
@@ -25,6 +26,19 @@ def login_and_get_token():
     token = data['data']['token']
     read.write_yaml_data({'accessToken': token})
     logs.info("登录成功，token已存入extract.yaml")
+
+@pytest.fixture(scope='session', autouse=True)
+def get_yq_app_code():
+    """从config.ini读取yqAppCode，写入extract.yaml，apiutil.py自动注入到每个请求的header
+    特殊环境不需要此配置时，在config.ini中将code置空即可（code =）"""
+    conf = OperationConfig()
+    yq_app_code = conf.get_section_for_data('yqAppCode', 'code')
+    if yq_app_code:
+        read.write_yaml_data({'yqAppCode': yq_app_code})
+        logs.info(f"yqAppCode已从config.ini读取并存入extract.yaml: {yq_app_code}")
+    else:
+        logs.info("yqAppCode未配置或为空，跳过header自动注入")
+
 
 @pytest.fixture(scope='session', autouse=True)
 def clear_extract_data():
